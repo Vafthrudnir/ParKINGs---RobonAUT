@@ -16,6 +16,7 @@ void BSP_Display_Init(void);
 void BSP_TempSensor_Init(void);
 
 void BSP_USART_Init(void);
+void BSP_SPI_Init(void);
 void BSP_Switch_Init(void);
 uint8_t GetI2CTemp(void);
 uint8_t GetADCValue(void);

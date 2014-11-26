@@ -34,17 +34,20 @@
 #define TASK_INIT_PRIO	10
 #define TASK_DEMO_PRIO	30
 #define TASK_USART_PRIO 50
+#define TASK_SPI_PRIO	40
 
 /* Task Stack Definitions */
 #define DEFAULT_STACK_SIZE	128
 OS_STK TaskInitStack[DEFAULT_STACK_SIZE];
 OS_STK TaskDemoStack[DEFAULT_STACK_SIZE];
 OS_STK TaskUSARTStack[DEFAULT_STACK_SIZE];
+OS_STK TaskSPIStack[DEFAULT_STACK_SIZE];
 
 /* Task Function Declarations */
 void Task_Init(void* param);
 extern void Task_Demo(void* param);
 extern void Task_USART_Write(void* param);
+extern void Task_SPI_Read(void* param);
 
 
 /* Sync Object Definitions */
@@ -82,9 +85,13 @@ void Task_Init(void* param)
 	/* Initializing USART */
 	BSP_USART_Init();
 
+	/* Initializing SPI */
+	BSP_SPI_Init();
+
 	/* Create sync objects */
 	/* Create tasks */
 	OSTaskCreate(Task_Demo,0,(OS_STK*)&TaskDemoStack[DEFAULT_STACK_SIZE-1],TASK_DEMO_PRIO);
 	OSTaskCreate(Task_USART_Write, 0, (OS_STK*)&TaskUSARTStack[DEFAULT_STACK_SIZE-1], TASK_USART_PRIO);
+	OSTaskCreate(Task_SPI_Read, 0, (OS_STK*)&TaskSPIStack[DEFAULT_STACK_SIZE-1], TASK_SPI_PRIO);
 	OSTaskDel(OS_PRIO_SELF);
 }

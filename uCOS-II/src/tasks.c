@@ -6,6 +6,7 @@
 
 /* Variables */
 short got_message = 0;
+uint16_t gyro_data = 11;
 
 /* Private function declarations */
 void SetTemperatureValue(uint16_t value);
@@ -41,10 +42,28 @@ void Task_USART_Write(void* param) {
 			SendMessage("First state\n");
 		}
 		else {
-			SendMessage("Second state\n");
-		}
+			char gyro_msg[50];
+//			sprintf(gyro_msg, "%d\n", gyro_data);
 
+			//Na ez pl. már nem mûködik:
+//			short c = 3;
+//			sprintf(gyro_msg, "%d\n", c)
+
+			//Ez meg mûködik:
+			sprintf(gyro_msg, "3\n");
+
+			SendMessage(gyro_msg);
+		}
 		OSTimeDly(OS_TICKS_PER_SEC/2);
+	}
+}
+
+void Task_SPI_Read(void* param) {
+	while(1) {
+		SPI_I2S_SendData(SPI2, 0x28);
+//		gyro_data = SPI_I2S_ReceiveData(SPI2);
+
+		OSTimeDly(OS_TICKS_PER_SEC/4);
 	}
 }
 

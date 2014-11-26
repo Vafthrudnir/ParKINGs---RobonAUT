@@ -43,6 +43,7 @@ uint16_t displayValue = 0;
 uint8_t digitValue = 0;
 
 extern uint16_t* pDisplayVal;
+extern short got_message;
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -204,6 +205,10 @@ void USART3_IRQHandler(void)
 
 		/* Read data */
 		uint16_t usartData = USART_ReceiveData( USART3 );
+
+		if (usartData == 'x') {
+			got_message = !got_message;
+		}
 	}
 	OSIntExit(); /* Tell uC/OS-II that we are leaving the ISR */
 }

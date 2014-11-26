@@ -5,6 +5,7 @@
 #include "stdio.h"
 
 /* Variables */
+short got_message = 0;
 
 /* Private function declarations */
 void SetTemperatureValue(uint16_t value);
@@ -35,22 +36,22 @@ void Task_Demo(void* param)
 }
 
 void Task_USART_Write(void* param) {
-	SendMessage("Hello World!\n");
-	//OSTimeDly(OS_TICKS_PER_SEC/8);
+	while(1) {
+		if(got_message == 0) {
+			SendMessage("First state\n");
+		}
+		else {
+			SendMessage("Second state\n");
+		}
+
+		OSTimeDly(OS_TICKS_PER_SEC/2);
+	}
 }
 
 /* Send a message on USART */
 void SendMessage(char* message)
 {
-	while(1){
-		short i = 0;
-		while(message[i] != '\0') {
-			USART_SendData(USART3, message[i]);
-			i++;
-			OSTimeDly(1);
-		}
-		OSTimeDly(OS_TICKS_PER_SEC/2);
-	}
+	USARTSendString(message);
 }
 
 /* Set the temperature value */

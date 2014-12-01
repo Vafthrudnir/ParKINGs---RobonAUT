@@ -50,6 +50,7 @@ void BSP_SPI_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	SPI_InitTypeDef SPI_InitStructure;
+    NVIC_InitTypeDef NVIC_InitStructure;
 
 	/* GPIOB Pin12,Pin13,Pin14,Pin15 AF-set */
 	GPIO_PinAFConfig(GPIOB,GPIO_PinSource12,GPIO_AF_SPI2);
@@ -77,57 +78,65 @@ void BSP_SPI_Init(void)
 	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
 	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
 	SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
-	SPI_InitStructure.SPI_NSS = SPI_NSS_Hard;
+	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
 
 	SPI_Init(SPI2, &SPI_InitStructure);
 
 	SPI_Cmd(SPI2, ENABLE);
+
+	SPI_ITConfig(SPI2,SPI_IT_RXNE,ENABLE);
+
+	NVIC_InitStructure.NVIC_IRQChannel = SPI2_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_Init(&NVIC_InitStructure);
 }
 
-/* ADC Initialization */
-void BSP_ADC_Init(void)
-{
-	  ADC_InitTypeDef ADC_InitStructure;
-	  ADC_CommonInitTypeDef ADC_CommonInitStructure;
-	  GPIO_InitTypeDef GPIO_InitStructure;
-
-	  /* Enable ADC2 clock */
-	  RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC2, ENABLE);
-	  RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOB, ENABLE );
-
-	  /* Configure ADC Channel 9 as analog input */
-	  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
-	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
-	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
-	  GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-
-	  /* ADC Common Init */
-	  ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;
-	  ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div6;
-	  ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_Disabled;
-	  ADC_CommonInitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles;
-	  ADC_CommonInit(&ADC_CommonInitStructure);
-
-	  /* ADC2 Configuration ------------------------------------------------------*/
-	  ADC_StructInit(&ADC_InitStructure);
-	  ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
-	  ADC_InitStructure.ADC_ScanConvMode = DISABLE;
-	  ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
-	  ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;
-	  ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
-	  ADC_InitStructure.ADC_NbrOfConversion = 1;
-	  ADC_Init(ADC2, &ADC_InitStructure);
-
-	  /* ADC2 Regular Channel Config */
-	  ADC_RegularChannelConfig(ADC2, ADC_Channel_9, 1, ADC_SampleTime_56Cycles);
-
-	  /* Enable ADC2 */
-	  ADC_Cmd(ADC2, ENABLE);
-
-	  /* ADC2 regular Software Start Conv */
-	  ADC_SoftwareStartConv(ADC2);
-}
+///* ADC Initialization */
+//void BSP_ADC_Init(void)
+//{
+//	  ADC_InitTypeDef ADC_InitStructure;
+//	  ADC_CommonInitTypeDef ADC_CommonInitStructure;
+//	  GPIO_InitTypeDef GPIO_InitStructure;
+//
+//	  /* Enable ADC2 clock */
+//	  RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC2, ENABLE);
+//	  RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOB, ENABLE );
+//
+//	  /* Configure ADC Channel 9 as analog input */
+//	  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
+//	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+//	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
+//	  GPIO_Init(GPIOB, &GPIO_InitStructure);
+//
+//
+//	  /* ADC Common Init */
+//	  ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;
+//	  ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div6;
+//	  ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_Disabled;
+//	  ADC_CommonInitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles;
+//	  ADC_CommonInit(&ADC_CommonInitStructure);
+//
+//	  /* ADC2 Configuration ------------------------------------------------------*/
+//	  ADC_StructInit(&ADC_InitStructure);
+//	  ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
+//	  ADC_InitStructure.ADC_ScanConvMode = DISABLE;
+//	  ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
+//	  ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;
+//	  ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
+//	  ADC_InitStructure.ADC_NbrOfConversion = 1;
+//	  ADC_Init(ADC2, &ADC_InitStructure);
+//
+//	  /* ADC2 Regular Channel Config */
+//	  ADC_RegularChannelConfig(ADC2, ADC_Channel_9, 1, ADC_SampleTime_56Cycles);
+//
+//	  /* Enable ADC2 */
+//	  ADC_Cmd(ADC2, ENABLE);
+//
+//	  /* ADC2 regular Software Start Conv */
+//	  ADC_SoftwareStartConv(ADC2);
+//}
 
 /* 7 Segment Display Initialization */
 void BSP_Display_Init(void)
@@ -286,6 +295,238 @@ void BSP_Switch_Init(void)
 	GPIO_SetBits( GPIOC, GPIO_Pin_6 );
 }
 
+void BSP_TIM4_Init(void)
+{
+	TIM_TimeBaseInitTypeDef TIM_BaseStruct;
+
+	/* Enable clock for TIM4 */
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
+	/*
+	TIM4 is connected to APB1 bus, which has on F407 device 42MHz clock
+	But, timer has internal PLL, which double this frequency for timer, up to 84MHz
+	Remember: Not each timer is connected to APB1, there are also timers connected
+	on APB2, which works at 84MHz by default, and internal PLL increase
+	this to up to 168MHz
+
+	Set timer prescaller
+	Timer count frequency is set with
+
+	timer_tick_frequency = Timer_default_frequency / (prescaller_set + 1)
+
+	In our case, we want a max frequency for timer, so we set prescaller to 0
+	And our timer will have tick frequency
+
+	timer_tick_frequency = 84000000 / (31 + 1) = 2625000
+	 */
+	TIM_BaseStruct.TIM_Prescaler = 31;
+	/* Count up */
+	TIM_BaseStruct.TIM_CounterMode = TIM_CounterMode_Up;
+	/*
+	Set timer period when it have reset
+	First you have to know max value for timer
+	In our case it is 16bit = 65535
+	To get your frequency for PWM, equation is simple
+
+	PWM_frequency = timer_tick_frequency / (TIM_Period + 1)
+
+	If you know your PWM frequency you want to have timer period set correct
+
+	TIM_Period = timer_tick_frequency / PWM_frequency - 1
+
+	In our case, for 10Khz PWM_frequency, set Period to
+
+	TIM_Period = 2625000 / 50 - 1 = 52499
+
+	If you get TIM_Period larger than max timer value (in our case 65535),
+	you have to choose larger prescaler and slow down timer tick frequency
+*/
+	TIM_BaseStruct.TIM_Period = 52499; /* 50Hz PWM */
+	TIM_BaseStruct.TIM_ClockDivision = TIM_CKD_DIV1;
+	TIM_BaseStruct.TIM_RepetitionCounter = 0;
+	/* Initialize TIM4 */
+	TIM_TimeBaseInit(TIM4, &TIM_BaseStruct);
+	/* Start count on TIM4 */
+	TIM_Cmd(TIM4, ENABLE);
+}
+
+void BSP_PWM_Init(void) {
+	TIM_OCInitTypeDef TIM_OCStruct;
+
+	/* Common settings */
+
+	/* PWM mode 2 = Clear on compare match */
+	/* PWM mode 1 = Set on compare match */
+	TIM_OCStruct.TIM_OCMode = TIM_OCMode_PWM2;
+	TIM_OCStruct.TIM_OutputState = TIM_OutputState_Enable;
+	TIM_OCStruct.TIM_OCPolarity = TIM_OCPolarity_Low;
+
+	/*
+	To get proper duty cycle, you have simple equation
+
+	pulse_length = ((TIM_Period + 1) * DutyCycle) / 100 - 1
+
+	where DutyCycle is in percent, between 0 and 100%
+
+	7.5% duty cycle: 	pulse_length = ((3937 + 1) * 7.5) / 100 - 1 = 2099
+
+
+	Remember: if pulse_length is larger than TIM_Period, you will have output HIGH all the time
+ 	 */
+	TIM_OCStruct.TIM_Pulse = 25000; /* 7,5% duty cycle, 1.5ms pulse */
+	TIM_OC1Init(TIM4, &TIM_OCStruct);
+	TIM_OC1PreloadConfig(TIM4, TIM_OCPreload_Enable);
+}
+
+void BSP_StartPWM(void)
+{
+	GPIO_InitTypeDef GPIO_InitStruct;
+
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource8, GPIO_AF_TIM4);
+
+	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_8;
+	GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
+	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+
+	GPIO_Init(GPIOB, &GPIO_InitStruct);
+}
+
+void BSP_PWM_SetPulseWidth(int16_t pulsewidth) {
+	TIM_OCInitTypeDef TIM_OCStruct;
+
+	/* Angle can be -45 to 45
+	 * Using the present TIM4 settings, the rotation in [-45;45] range can be defined by:
+	 * pulsewidth = angle * 15 + 3937;
+	 */
+
+	/* Common settings */
+
+	/* PWM mode 2 = Clear on compare match */
+	/* PWM mode 1 = Set on compare match */
+	TIM_OCStruct.TIM_OCMode = TIM_OCMode_PWM2;
+	TIM_OCStruct.TIM_OutputState = TIM_OutputState_Enable;
+	TIM_OCStruct.TIM_OCPolarity = TIM_OCPolarity_Low;
+
+	TIM_OCStruct.TIM_Pulse = pulsewidth; /* 7,5% duty cycle, 1.5ms pulse */
+	TIM_OC1Init(TIM4, &TIM_OCStruct);
+	TIM_OC1PreloadConfig(TIM4, TIM_OCPreload_Enable);
+}
+
+void BSP_LineSensor_Init(void)
+{
+	// MUX initialization
+	GPIO_InitTypeDef  GPIO_InitStructure;
+
+	/* Enable GPIOD Periphery clock */
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);
+
+	/* Configure PE10, PE12, PE14 in output pushpull mode */
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_12 | GPIO_Pin_14;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(GPIOE, &GPIO_InitStructure);
+
+	/* Enable GPIOD Periphery clock */
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
+
+	// Enable PD7 (LDR_OE), PD11 (LDR_LE)
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_11;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
+}
+
+/* ADC Initialization */
+void BSP_ADC_Init(void)
+{
+	  uint16_t ADC2ConvertedValues[6] = {0, 0, 0, 0, 0, 0};
+
+	  DMA_InitTypeDef DMA_InitStructure;
+	  ADC_InitTypeDef ADC_InitStructure;
+	  ADC_CommonInitTypeDef ADC_CommonInitStructure;
+	  GPIO_InitTypeDef GPIO_InitStructure;
+
+	  /* Enable ADC2 clock */
+	  RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC2, ENABLE);
+	  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2 | RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC, ENABLE );
+
+	  /* DMA2 Stream0 channel0 configuration **************************************/
+	  DMA_InitStructure.DMA_Channel = DMA_Channel_2;
+	  DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&ADC3->DR;//ADC3's data register
+	  DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&ADC2ConvertedValues;
+	  DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
+	  DMA_InitStructure.DMA_BufferSize = 6;
+	  DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+	  DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+	  DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;//Reads 16 bit values
+	  DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;//Stores 16 bit values
+	  DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
+	  DMA_InitStructure.DMA_Priority = DMA_Priority_High;
+	  DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;
+	  DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_HalfFull;
+	  DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+	  DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+	  DMA_Init(DMA2_Stream0, &DMA_InitStructure);
+	  DMA_Cmd(DMA2_Stream0, ENABLE);
+
+	  /* Configure ADC Channel 1, 2, 3 as analog input */
+	  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;
+	  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
+	  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
+	  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+	  /* Configure ADC Channel 8, 9 as analog input */
+	  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
+	  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+	  /* Configure ADC Channel 11 as analog input */
+	  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
+	  GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+
+	  /* ADC Common Init */
+	  ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;
+	  ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div2;
+	  ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_Disabled;
+	  ADC_CommonInitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles;
+	  ADC_CommonInit(&ADC_CommonInitStructure);
+
+	  /* ADC2 Configuration ------------------------------------------------------*/
+	  ADC_DeInit();
+	  ADC_StructInit(&ADC_InitStructure);
+	  ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
+	  ADC_InitStructure.ADC_ScanConvMode = ENABLE;
+	  ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
+	  ADC_InitStructure.ADC_ExternalTrigConv = 0;
+	  ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;
+	  ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
+	  ADC_InitStructure.ADC_NbrOfConversion = 6;
+	  ADC_Init(ADC2, &ADC_InitStructure);
+
+	  /* ADC2 Regular Channel Config */
+	  ADC_RegularChannelConfig(ADC2, ADC_Channel_1, 1, ADC_SampleTime_56Cycles);
+	  ADC_RegularChannelConfig(ADC2, ADC_Channel_2, 2, ADC_SampleTime_56Cycles);
+	  ADC_RegularChannelConfig(ADC2, ADC_Channel_3, 3, ADC_SampleTime_56Cycles);
+	  ADC_RegularChannelConfig(ADC2, ADC_Channel_8, 4, ADC_SampleTime_56Cycles);
+	  ADC_RegularChannelConfig(ADC2, ADC_Channel_9, 5, ADC_SampleTime_56Cycles);
+	  ADC_RegularChannelConfig(ADC2, ADC_Channel_11, 6, ADC_SampleTime_56Cycles);
+
+	  /* Enable DMA request after last transfer (Single-ADC mode) */
+	  ADC_DMARequestAfterLastTransferCmd(ADC2, ENABLE);
+
+	  /* Enable ADC2 DMA */
+	  ADC_DMACmd(ADC2, ENABLE);
+
+	  /* Enable ADC2 */
+	  ADC_Cmd(ADC2, ENABLE);
+
+	  /* ADC2 regular Software Start Conv */
+	  ADC_SoftwareStartConv(ADC2);
+}
+
 /* Read the temperature */
 uint8_t GetI2CTemp(void)
 {
@@ -329,7 +570,7 @@ uint8_t GetI2CTemp(void)
 /* Read the ADC value */
 uint8_t GetADCValue(void)
 {
-	return ADC_GetConversionValue(ADC2)>>6;
+	return ADC_GetConversionValue(ADC2);
 }
 
 /* Read the display switch state */
@@ -359,6 +600,27 @@ void USARTSendString(char* data)
 		USARTSendByte(USART3,*data);
 		data++;
 	}
+}
+
+void SetMUXCh(uint8_t channel)
+{
+	// MUXA pin
+	if ((channel|4)>>2) GPIO_SetBits(GPIOE, GPIO_Pin_10);
+	else GPIO_ResetBits(GPIOE, GPIO_Pin_10);
+	// MUXB pin
+	if ((channel|2)>>1) GPIO_SetBits(GPIOE, GPIO_Pin_12);
+	else GPIO_ResetBits(GPIOE, GPIO_Pin_12);
+	// MUXC pin
+	if ((channel|1)) GPIO_SetBits(GPIOE, GPIO_Pin_14);
+	else GPIO_ResetBits(GPIOE, GPIO_Pin_14);
+}
+
+void SetLEDDriver(uint8_t channel)
+{
+	USARTSendByte(USART3, channel);
+	GPIO_SetBits(GPIOD, GPIO_Pin_11);
+	GPIO_ResetBits(GPIOD, GPIO_Pin_11);
+	GPIO_ResetBits(GPIOD, GPIO_Pin_7);
 }
 
 void SetRedLED()

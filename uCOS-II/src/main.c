@@ -82,6 +82,14 @@ void Task_Init(void* param)
 	/* Initializing LEDs */
 	BSP_LED_Init();
 
+	/* Initializing MUX pins */
+//	BSP_MUX_Init();
+
+	/*PWM*/
+	BSP_TIM4_Init();
+	BSP_PWM_Init();
+	BSP_StartPWM();
+
 	/* Initializing USART */
 	BSP_USART_Init();
 
@@ -92,6 +100,6 @@ void Task_Init(void* param)
 	/* Create tasks */
 	OSTaskCreate(Task_Demo,0,(OS_STK*)&TaskDemoStack[DEFAULT_STACK_SIZE-1],TASK_DEMO_PRIO);
 	OSTaskCreate(Task_USART_Write, 0, (OS_STK*)&TaskUSARTStack[DEFAULT_STACK_SIZE-1], TASK_USART_PRIO);
-	OSTaskCreate(Task_SPI_Read, 0, (OS_STK*)&TaskSPIStack[DEFAULT_STACK_SIZE-1], TASK_SPI_PRIO);
+//	OSTaskCreate(Task_SPI_Read, 0, (OS_STK*)&TaskSPIStack[DEFAULT_STACK_SIZE-1], TASK_SPI_PRIO);
 	OSTaskDel(OS_PRIO_SELF);
 }

@@ -6,7 +6,8 @@
 
 /* Variables */
 short got_message = 0;
-uint16_t gyro_data = 11;
+uint16_t spi_data;
+uint8_t mux[8] = {5, 7, 6, 4, 2, 1, 0, 3};
 
 /* Private function declarations */
 void SetTemperatureValue(uint16_t value);
@@ -38,23 +39,17 @@ void Task_Demo(void* param)
 
 void Task_USART_Write(void* param) {
 	while(1) {
-		if(got_message == 0) {
-			SendMessage("First state\n");
-		}
-		else {
-			char gyro_msg[50];
-//			sprintf(gyro_msg, "%d\n", gyro_data);
-
-			//Na ez pl. már nem mûködik:
-//			short c = 3;
-//			sprintf(gyro_msg, "%d\n", c)
-
-			//Ez meg mûködik:
-			sprintf(gyro_msg, "3\n");
+		if(got_message == 1) {
+			char gyro_msg[300];
+			sprintf(gyro_msg, "%d\n", spi_data);
 
 			SendMessage(gyro_msg);
+			got_message != got_message;
 		}
-		OSTimeDly(OS_TICKS_PER_SEC/2);
+		else {
+			SendMessage("Semmi\n");
+		}
+		OSTimeDly(OS_TICKS_PER_SEC/4);
 	}
 }
 
@@ -64,6 +59,17 @@ void Task_SPI_Read(void* param) {
 //		gyro_data = SPI_I2S_ReceiveData(SPI2);
 
 		OSTimeDly(OS_TICKS_PER_SEC/4);
+	}
+}
+
+void Task_ScanLine(void* param)
+{
+	for(uint8_t i=7; i>=0; i--)
+	{
+		SetMUXCh(mux[i]);
+		SetLEDDRiver(i);
+		/* TODO: Analog digital conversion */
+		GetADCValue();	// Nem tudom hogy igy kiszedi-e az osszes csatornat
 	}
 }
 

@@ -43,6 +43,7 @@ uint16_t displayValue = 0;
 uint8_t digitValue = 0;
 
 extern uint16_t* pDisplayVal;
+extern uint16_t* spi_data;
 extern short got_message;
 
 /******************************************************************************/
@@ -204,9 +205,29 @@ void USART3_IRQHandler(void)
 		USART_ClearITPendingBit( USART3, USART_IT_RXNE );
 
 		/* Read data */
-		uint16_t usartData = USART_ReceiveData( USART3 );
+//		uint16_t usartData = USART_ReceiveData( USART3 );
+//
+//		if (usartData == 'x') {
+//			got_message = !got_message;
+//		}
+	}
+	OSIntExit(); /* Tell uC/OS-II that we are leaving the ISR */
+}
 
-		if (usartData == 'x') {
+void SPI2_IRQHandler(void)
+{
+	/* Handle the Interrupt … don’t forget to clear the interrupt source */
+
+	/* Check the flag that shows the reason of interrupt */
+	if (SPI_GetITStatus( SPI2, SPI_IT_RXNE ) == SET)
+	{
+		/* Clear the interrupt pending bit */
+		SPI_ClearITPendingBit( SPI2, SPI_IT_RXNE );
+
+		/* Read data */
+		uint16_t spi_data = SPI_ReceiveData( SPI2 );
+
+		if (got_message == 0) {
 			got_message = !got_message;
 		}
 	}

@@ -7,7 +7,6 @@
 /* Variables */
 short got_message = 0;
 uint16_t spi_data;
-uint8_t mux[8] = {5, 7, 6, 4, 2, 1, 0, 3};
 
 /* Private function declarations */
 void SetTemperatureValue(uint16_t value);
@@ -33,43 +32,33 @@ void Task_Demo(void* param)
 		portVal &= 0x0fff;
 		portVal |= ledVal;
 		GPIO_Write(GPIOD,portVal);
-		OSTimeDly(OS_TICKS_PER_SEC/4);
+		OSTimeDly(OS_TICKS_PER_SEC/2);
 	}
 }
 
 void Task_USART_Write(void* param) {
-	while(1) {
-		if(got_message == 1) {
-			char gyro_msg[300];
-			sprintf(gyro_msg, "%d\n", spi_data);
+	SendMessage("AT+AB DefaultLocalName ParKINGs\n");
+//	SendMessage("AT+AB Bond E0CA944194C1 4321\n");
+	SendMessage("AT+AB EnableBond\n");
 
-			SendMessage(gyro_msg);
-			got_message != got_message;
-		}
-		else {
-			SendMessage("Semmi\n");
-		}
-		OSTimeDly(OS_TICKS_PER_SEC/4);
+//	SendMessage("AT+AB EnableBond DAVE-PC 4321");
+	while(1) {
+		SendMessage("Semmi\n");
+		OSTimeDly(OS_TICKS_PER_SEC/2);
 	}
 }
 
-void Task_SPI_Read(void* param) {
+void Task_PWM(void* param) {
 	while(1) {
-		SPI_I2S_SendData(SPI2, 0x28);
-//		gyro_data = SPI_I2S_ReceiveData(SPI2);
+		int median = 3937;
+		int diverg = 1312;
 
-		OSTimeDly(OS_TICKS_PER_SEC/4);
-	}
-}
-
-void Task_ScanLine(void* param)
-{
-	for(uint8_t i=7; i>=0; i--)
-	{
-		SetMUXCh(mux[i]);
-		SetLEDDRiver(i);
-		/* TODO: Analog digital conversion */
-		GetADCValue();	// Nem tudom hogy igy kiszedi-e az osszes csatornat
+		int curVal = median - diverg;
+		while(curVal < median + diverg && curVal >= median - diverg) {
+			BSP_PWM_SetPulseWidth(curVal);
+			curVal += 100;
+			OSTimeDly(OS_TICKS_PER_SEC/8);
+		}
 	}
 }
 

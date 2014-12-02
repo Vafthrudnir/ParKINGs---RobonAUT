@@ -15,13 +15,16 @@ void BSP_ADC_Init(void);
 void BSP_Display_Init(void);
 void BSP_TempSensor_Init(void);
 
-void BSP_USART_Init(void);
+void BSP_USART3_Init(void);
+void BSP_USART1_Init(void);
 void BSP_SPI_Init(void);
 
 void BSP_TIM4_Init(void);
-void BSP_PWM_Init(void);
-void BSP_StartPWM(void);
+//void BSP_StartPWM(void);
 void BSP_PWM_SetPulseWidth(int16_t pulsewidth);
+void InitializeTimer(void);
+void InitializePWMChannel(void);
+void InitializeLEDs(void);
 
 void BSP_LineSensor_Init(void);
 
@@ -35,6 +38,9 @@ void SetGreenLED();
 void ResetRedLED();
 void ResetGreenLED();
 void USARTSendString(char* data);
+
+void BSP_PWM_Init(void);
+void BSP_TIM_Init(void);
 
 
 /* Global Variables */

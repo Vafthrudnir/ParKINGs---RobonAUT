@@ -35,6 +35,7 @@
 #define TASK_DEMO_PRIO	30
 #define TASK_USART_PRIO 50
 #define TASK_SPI_PRIO	40
+#define TASK_PWM_PRIO	20
 
 /* Task Stack Definitions */
 #define DEFAULT_STACK_SIZE	128
@@ -42,12 +43,14 @@ OS_STK TaskInitStack[DEFAULT_STACK_SIZE];
 OS_STK TaskDemoStack[DEFAULT_STACK_SIZE];
 OS_STK TaskUSARTStack[DEFAULT_STACK_SIZE];
 OS_STK TaskSPIStack[DEFAULT_STACK_SIZE];
+OS_STK TaskPWMStack[DEFAULT_STACK_SIZE];
 
 /* Task Function Declarations */
 void Task_Init(void* param);
 extern void Task_Demo(void* param);
 extern void Task_USART_Write(void* param);
-extern void Task_SPI_Read(void* param);
+extern void Task_PWM(void* param);
+//extern void Task_SPI_Read(void* param);
 
 
 /* Sync Object Definitions */
@@ -86,20 +89,24 @@ void Task_Init(void* param)
 //	BSP_MUX_Init();
 
 	/*PWM*/
-	BSP_TIM4_Init();
-	BSP_PWM_Init();
-	BSP_StartPWM();
+//	BSP_TIM_Init();
+//	BSP_PWM_Init();
+	InitializeLEDs();
+	InitializeTimer();
+	InitializePWMChannel();
 
 	/* Initializing USART */
-	BSP_USART_Init();
+//	BSP_USART3_Init();
+//	BSP_USART1_Init();
 
 	/* Initializing SPI */
-	BSP_SPI_Init();
+//	BSP_SPI_Init();
 
 	/* Create sync objects */
 	/* Create tasks */
 	OSTaskCreate(Task_Demo,0,(OS_STK*)&TaskDemoStack[DEFAULT_STACK_SIZE-1],TASK_DEMO_PRIO);
-	OSTaskCreate(Task_USART_Write, 0, (OS_STK*)&TaskUSARTStack[DEFAULT_STACK_SIZE-1], TASK_USART_PRIO);
+	OSTaskCreate(Task_PWM, 0, (OS_STK*)&TaskPWMStack[DEFAULT_STACK_SIZE-1], TASK_PWM_PRIO);
+//	OSTaskCreate(Task_USART_Write, 0, (OS_STK*)&TaskUSARTStack[DEFAULT_STACK_SIZE-1], TASK_USART_PRIO);
 //	OSTaskCreate(Task_SPI_Read, 0, (OS_STK*)&TaskSPIStack[DEFAULT_STACK_SIZE-1], TASK_SPI_PRIO);
 	OSTaskDel(OS_PRIO_SELF);
 }

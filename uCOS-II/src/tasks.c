@@ -3,10 +3,12 @@
 #include "ucos_ii.h"
 #include "bsp.h"
 #include "stdio.h"
+//#include "string.h"
 
 /* Variables */
 short got_message = 0;
 uint16_t spi_data;
+char usartData[50];
 
 /* Private function declarations */
 void SetTemperatureValue(uint16_t value);
@@ -37,11 +39,16 @@ void Task_Demo(void* param)
 }
 
 void Task_USART_Write(void* param) {
-	SendMessage("AT+AB DefaultLocalName ParKINGs\n");
-//	SendMessage("AT+AB Bond E0CA944194C1 4321\n");
-	SendMessage("AT+AB EnableBond\n");
+	SendMessage("^#^$^%\n");
+	while(!got_message) {
+		OSTimeDly(1);
+	}
+	got_message = 0;
+	while(!got_message) {
+		OSTimeDly(1);
+	}
+	got_message = 0;
 
-//	SendMessage("AT+AB EnableBond DAVE-PC 4321");
 	while(1) {
 		SendMessage("Semmi\n");
 		OSTimeDly(OS_TICKS_PER_SEC/2);
@@ -51,7 +58,8 @@ void Task_USART_Write(void* param) {
 void Task_PWM(void* param) {
 	while(1) {
 		int median = 3937;
-		int diverg = 1312;
+//		int diverg = 1312;
+		int diverg = 600;
 
 		int curVal = median - diverg;
 		while(curVal < median + diverg && curVal >= median - diverg) {
@@ -59,6 +67,34 @@ void Task_PWM(void* param) {
 			curVal += 100;
 			OSTimeDly(OS_TICKS_PER_SEC/8);
 		}
+	}
+}
+
+void Task_MotorPWM(void* param) {
+	while(1) {
+		int median = 3937;
+//		int diverg = 1312;
+//		int diverg = 600;
+
+		BSP_PWM_SetPulseWidth(3937);
+		OSTimeDly(OS_TICKS_PER_SEC/8);
+
+//		int curVal = median - diverg;
+//		while(curVal < median + diverg && curVal >= median - diverg) {
+//			BSP_PWM_SetPulseWidth(curVal);
+//			curVal += 100;
+//			OSTimeDly(OS_TICKS_PER_SEC/8);
+//		}
+	}
+}
+
+void Task_LineDriver(void* param) {
+	uint8_t cVal = 128;
+	while(1) {
+		USART_SendData(USART3,cVal);
+		OSTimeDly(OS_TICKS_PER_SEC/2);
+		if(cVal == 1) cVal = 128;
+		else cVal = cVal >> 1;
 	}
 }
 

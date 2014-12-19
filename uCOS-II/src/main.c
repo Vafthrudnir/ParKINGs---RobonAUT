@@ -36,6 +36,8 @@
 #define TASK_USART_PRIO 50
 #define TASK_SPI_PRIO	40
 #define TASK_PWM_PRIO	20
+#define TASK_MotorPWM_PRIO	19
+#define TASK_LINE_PRIO	15
 
 /* Task Stack Definitions */
 #define DEFAULT_STACK_SIZE	128
@@ -44,12 +46,17 @@ OS_STK TaskDemoStack[DEFAULT_STACK_SIZE];
 OS_STK TaskUSARTStack[DEFAULT_STACK_SIZE];
 OS_STK TaskSPIStack[DEFAULT_STACK_SIZE];
 OS_STK TaskPWMStack[DEFAULT_STACK_SIZE];
+OS_STK TaskMotorPWMStack[DEFAULT_STACK_SIZE];
+OS_STK TaskLineDriverStack[DEFAULT_STACK_SIZE];
+
 
 /* Task Function Declarations */
 void Task_Init(void* param);
 extern void Task_Demo(void* param);
 extern void Task_USART_Write(void* param);
 extern void Task_PWM(void* param);
+extern void Task_MotorPWM(void* param);
+extern void Task_LineDriver(void* param);
 //extern void Task_SPI_Read(void* param);
 
 
@@ -88,16 +95,22 @@ void Task_Init(void* param)
 	/* Initializing MUX pins */
 //	BSP_MUX_Init();
 
-	/*PWM*/
-//	BSP_TIM_Init();
-//	BSP_PWM_Init();
-	InitializeLEDs();
-	InitializeTimer();
-	InitializePWMChannel();
+	/*Servo PWM*/
+//	InitializeServoPWM();
+//	InitializeTimer();
+//	InitializePWMChannel();
+
+	/*Motor PWM*/
+	InitializeMotorPWM();
+	InitializeMotorTimer();
+	InitializeMotorPWMChannel();
 
 	/* Initializing USART */
 //	BSP_USART3_Init();
-//	BSP_USART1_Init();
+//	BSP_USART1_Init();	//Bluetooth
+	BSP_LineDriver_Init();	//USRT
+	BSP_ADC_Init();	//ADC for leds
+//	BSP_Tim12_Init();
 
 	/* Initializing SPI */
 //	BSP_SPI_Init();
@@ -105,8 +118,10 @@ void Task_Init(void* param)
 	/* Create sync objects */
 	/* Create tasks */
 	OSTaskCreate(Task_Demo,0,(OS_STK*)&TaskDemoStack[DEFAULT_STACK_SIZE-1],TASK_DEMO_PRIO);
-	OSTaskCreate(Task_PWM, 0, (OS_STK*)&TaskPWMStack[DEFAULT_STACK_SIZE-1], TASK_PWM_PRIO);
+//	OSTaskCreate(Task_PWM, 0, (OS_STK*)&TaskPWMStack[DEFAULT_STACK_SIZE-1], TASK_PWM_PRIO);
+//	OSTaskCreate(Task_MotorPWM, 0, (OS_STK*)&TaskMotorPWMStack[DEFAULT_STACK_SIZE-1], TASK_MotorPWM_PRIO);
 //	OSTaskCreate(Task_USART_Write, 0, (OS_STK*)&TaskUSARTStack[DEFAULT_STACK_SIZE-1], TASK_USART_PRIO);
 //	OSTaskCreate(Task_SPI_Read, 0, (OS_STK*)&TaskSPIStack[DEFAULT_STACK_SIZE-1], TASK_SPI_PRIO);
+	OSTaskCreate(Task_LineDriver, 0, (OS_STK*)&TaskLineDriverStack[DEFAULT_STACK_SIZE-1], TASK_LINE_PRIO);
 	OSTaskDel(OS_PRIO_SELF);
 }

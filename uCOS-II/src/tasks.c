@@ -7,20 +7,17 @@
 
 /* Variables */
 short got_message = 0;
-uint16_t spi_data;
+uint16_t adc_data = 444;
 char usartData[50];
+uint16_t muxData[5] = {1, 1, 1, 1, 1};
+uint8_t muxSelect[8] = {3, 0, 1, 2, 4, 6, 7, 5};
+uint16_t lineData[22];
 
 /* Private function declarations */
-void SetTemperatureValue(uint16_t value);
-void SetLimitValue(uint16_t value);
-uint16_t GetLimitValue();
-uint16_t GetTemperatureValue();
-void SetDisplayValue(uint8_t value);
-void DecrementLimitValue();
-void IncrementLimitValue();
 void SendMessage(char* message);
+uint16_t ADC_GetChannelData(uint8_t ADC_Channel );
 
-/* The Demo Task */
+/* Led flashing demo task */
 void Task_Demo(void* param)
 {
 	uint16_t ledVal = 0x1000;
@@ -38,19 +35,35 @@ void Task_Demo(void* param)
 	}
 }
 
+/* USART for Bluetooth and PuTTY comm */
 void Task_USART_Write(void* param) {
-	SendMessage("^#^$^%\n");
-	while(!got_message) {
-		OSTimeDly(1);
-	}
-	got_message = 0;
-	while(!got_message) {
-		OSTimeDly(1);
-	}
-	got_message = 0;
 
+	/* Bluetooth */
+//	SendMessage("^#^$^%\n");
+//	while(!got_message) {
+//		OSTimeDly(1);
+//	}
+//	got_message = 0;
+//	while(!got_message) {
+//		OSTimeDly(1);
+//	}
+//	got_message = 0;
+//
+//	while(1) {
+//		SendMessage("Semmi\n");
+//		OSTimeDly(OS_TICKS_PER_SEC/2);
+//	}
+
+	/* Test */
 	while(1) {
-		SendMessage("Semmi\n");
+		//0.722 a szorzó a mV-ba váltáshoz
+		int i;
+		for( i = 0; i < 22; i++) {
+			sprintf(usartData, "%d", lineData[i]);
+			SendMessage(usartData);
+			SendMessage("\t");
+		}
+		SendMessage("\n");
 		OSTimeDly(OS_TICKS_PER_SEC/2);
 	}
 }
@@ -73,12 +86,15 @@ void Task_PWM(void* param) {
 void Task_MotorPWM(void* param) {
 	while(1) {
 		int median = 3937;
+
+		//Forgatás lehatárolása
 //		int diverg = 1312;
 //		int diverg = 600;
 
-		BSP_PWM_SetPulseWidth(3937);
+		BSP_PWM_SetMotorPulseWidth(median);
 		OSTimeDly(OS_TICKS_PER_SEC/8);
 
+		//Forgatás
 //		int curVal = median - diverg;
 //		while(curVal < median + diverg && curVal >= median - diverg) {
 //			BSP_PWM_SetPulseWidth(curVal);
@@ -89,13 +105,60 @@ void Task_MotorPWM(void* param) {
 }
 
 void Task_LineDriver(void* param) {
-	uint8_t cVal = 128;
 	while(1) {
-		USART_SendData(USART3,cVal);
-		OSTimeDly(OS_TICKS_PER_SEC/2);
-		if(cVal == 1) cVal = 128;
-		else cVal = cVal >> 1;
+		//128 = 0b 1000 0000
+		uint8_t cVal = 128;
+		int i;
+		for(i = 0; i < 8; i++) {
+			cVal = cVal >> i;
+			USART_SendData(USART3,cVal);
+
+			//Mux Select bits
+			//MSB bit (A):
+			if (muxSelect[i] >> 2) {
+				GPIO_SetBits(GPIOE, GPIO_Pin_10);
+			}
+			else
+				GPIO_ResetBits(GPIOE, GPIO_Pin_10);
+			//B bit:
+			if (muxSelect[i] & 0b010) {
+				GPIO_SetBits(GPIOE, GPIO_Pin_12);
+			}
+			else
+				GPIO_ResetBits(GPIOE, GPIO_Pin_12);
+			//LSB C bit:
+			if (muxSelect[i] & 0b001) {
+				GPIO_SetBits(GPIOE, GPIO_Pin_14);
+			}
+			else
+				GPIO_ResetBits(GPIOE, GPIO_Pin_14);
+
+			/* Reading ADC channels */
+			muxData[0] = ADC_GetChannelData(ADC_Channel_1);
+			muxData[1] = ADC_GetChannelData(ADC_Channel_2);
+			muxData[2] = ADC_GetChannelData(ADC_Channel_3);
+			/* Second board */
+//			muxData[3] = ADC_GetChannelData(ADC_Channel_11);
+//			muxData[4] = ADC_GetChannelData(ADC_Channel_14);
+
+			lineData[i] = muxData[0];
+			lineData[i+8] = muxData[1];
+			if(i < 6) {
+				lineData[i+16] = muxData[2];
+			}
+
+			OSTimeDly(OS_TICKS_PER_SEC/2);
+		}
 	}
+}
+
+/*Change channel and get adc data from that channel*/
+uint16_t ADC_GetChannelData(uint8_t ADC_Channel)
+{
+	ADC_RegularChannelConfig(ADC2, ADC_Channel, 1, ADC_SampleTime_56Cycles);
+	ADC_SoftwareStartConv(ADC2);
+	while(!ADC_GetFlagStatus(ADC2, ADC_FLAG_EOC));
+	return ADC_GetConversionValue(ADC2);
 }
 
 /* Send a message on USART */
@@ -103,51 +166,3 @@ void SendMessage(char* message)
 {
 	USARTSendString(message);
 }
-
-/* Set the temperature value */
-void SetTemperatureValue(uint16_t value)
-{
-	/* TODO: Set the value of TempVal */
-}
-
-/* Read the temperature value */
-uint16_t GetTemperatureValue()
-{
-	/* TODO: Return the value of TempVal */
-	return 0;
-}
-
-/* Set the limit value */
-void SetLimitValue(uint16_t value)
-{
-	/* TODO: Set the value of LimitVal */
-}
-
-/* Read the temperature value */
-uint16_t GetLimitValue()
-{
-	/* TODO: Return the value of LimitVal */
-	return 0;
-}
-
-/* Increment the limit value */
-void IncrementLimitValue()
-{
-	/* TODO: Change the value of LimitVal */
-}
-
-/* Decrement the limit value */
-void DecrementLimitValue()
-{
-	/* TODO: Change the value of LimitVal */
-}
-
-/* Set the display value */
-void SetDisplayValue(uint8_t value)
-{
-	// The input parameter is a boolean
-	value &=1;
-
-	/* TODO: Change the value of pDisplayVal */
-}
-
